@@ -1,11 +1,13 @@
-'From Cuis7.5 [latest update: #7733] on 4 December 2025 at 11:52:46 pm'!
+'From Cuis7.5 [latest update: #7733] on 6 December 2025 at 12:40:36 am'!
 'Description '!
-!provides: 'AdventOfCode 2025' 1 3!
+!provides: 'AdventOfCode 2025' 1 4!
 SystemOrganization addCategory: #'AdventOfCode 2025'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 1'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 2'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 3'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 4'!
+SystemOrganization addCategory: #'AdventOfCode 2025-Day 5'!
+SystemOrganization addCategory: #'AdventOfCode 2025-Day 6'!
 
 
 !classDefinition: #DayOne2025 category: #'AdventOfCode 2025-Day 1'!
@@ -46,6 +48,26 @@ Object subclass: #DayFour2025
 	category: 'AdventOfCode 2025-Day 4'!
 !classDefinition: 'DayFour2025 class' category: #'AdventOfCode 2025-Day 4'!
 DayFour2025 class
+	instanceVariableNames: ''!
+
+!classDefinition: #DayFive2025 category: #'AdventOfCode 2025-Day 5'!
+Object subclass: #DayFive2025
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'AdventOfCode 2025-Day 5'!
+!classDefinition: 'DayFive2025 class' category: #'AdventOfCode 2025-Day 5'!
+DayFive2025 class
+	instanceVariableNames: ''!
+
+!classDefinition: #DaySix2025 category: #'AdventOfCode 2025-Day 6'!
+Object subclass: #DaySix2025
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'AdventOfCode 2025-Day 6'!
+!classDefinition: 'DaySix2025 class' category: #'AdventOfCode 2025-Day 6'!
+DaySix2025 class
 	instanceVariableNames: ''!
 
 
@@ -381,3 +403,111 @@ isRoleOn: grid at: x and: y
 		].
 	
 	^ role.! !
+
+!DayFive2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 6/Dec/2025 00:33:00'!
+countFreshIngredientIDs
+
+	| inventory unifiedInventory count mode |
+	inventory := OrderedCollection new.
+	unifiedInventory := OrderedCollection new.
+	count := 0.
+	mode := #INGREDIENT_ID_RANGES.
+	
+	'/home/jeroen/Documents/AdventOfCode/2025/day/5/input' asFileEntry readStreamDo: [:fileStream|
+		[fileStream atEnd] whileFalse: [ | line |
+			line := fileStream nextLine.
+			(line size = 0)
+				ifTrue: [ 
+					mode := #AVAILABLE_INGREDIENT_IDS
+					]
+				ifFalse: [
+					(mode = #INGREDIENT_ID_RANGES) ifTrue: [ | range |
+						range := line findTokens: '-'.
+						inventory add: (Point x: (range at: 1) asNumber y: (range at: 2) asNumber).
+						].
+					(mode = #AVAILABLE_INGREDIENT_IDS) ifTrue: [
+						].
+				].
+			].
+		].
+
+	[
+		| range index needToBeUnified |
+		range := inventory removeFirst.
+		index := 0.
+		needToBeUnified := false.
+
+		[
+			| potentialOverlappingRange |
+			
+			index := index + 1.
+			
+			(inventory size > 0) ifTrue: [
+				potentialOverlappingRange := inventory at: index.
+				((potentialOverlappingRange x to: potentialOverlappingRange y) includes: range x) ifTrue: [ needToBeUnified := true ].
+				((potentialOverlappingRange x to: potentialOverlappingRange y) includes: range y) ifTrue: [ needToBeUnified := true ].
+				].
+			
+			(needToBeUnified = false) & (index < inventory size).
+			] whileTrue.
+			
+		needToBeUnified
+			ifTrue: [
+				| overlappingRange newX newY |
+				overlappingRange := inventory removeAt: index.
+				(range x < overlappingRange x) ifTrue: [ newX := range x ] ifFalse: [ newX := overlappingRange x ].
+				(range y > overlappingRange y) ifTrue: [ newY := range y ] ifFalse: [ newY := overlappingRange y ].
+				inventory add: (Point x: newX y: newY).
+				]
+			ifFalse: [
+				unifiedInventory add: range.
+				].
+			
+		inventory isEmpty not.
+		] whileTrue.
+	
+	1 to: unifiedInventory size do: [ :index |
+		| range |
+		range := unifiedInventory at: index.
+		count := count + range y - range x + 1.
+		Transcript show: range asString, ' => ', count asString, ' points.'; cr.
+		].
+	
+	^ count.! !
+
+!DayFive2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 5/Dec/2025 23:30:00'!
+countSpoiledIngredients
+
+	| inventory count mode |
+	inventory := OrderedCollection new.
+	count := 0.
+	mode := #INGREDIENT_ID_RANGES.
+	
+	'/home/jeroen/Documents/AdventOfCode/2025/day/5/input' asFileEntry readStreamDo: [:fileStream|
+		[fileStream atEnd] whileFalse: [ | line |
+			line := fileStream nextLine.
+			(line size = 0)
+				ifTrue: [ 
+					mode := #AVAILABLE_INGREDIENT_IDS
+					]
+				ifFalse: [
+					(mode = #INGREDIENT_ID_RANGES) ifTrue: [ | range |
+						range := line findTokens: '-'.
+						inventory add: (Point x: (range at: 1) asNumber y: (range at: 2) asNumber).
+						].
+					(mode = #AVAILABLE_INGREDIENT_IDS) ifTrue: [ | ingredient fresh index |
+						ingredient := line asNumber.
+						fresh := false.
+						index := 0.
+						[
+							index := index + 1.
+							(((inventory at: index) x to: (inventory at: index) y) includes: ingredient) ifTrue: [ fresh := true. ].
+							(fresh not & (index < inventory size))
+						] whileTrue.
+						fresh ifTrue: [ count := count + 1 ].
+						].
+				].
+			].
+		].
+	
+	^ count.! !
