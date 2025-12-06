@@ -1,6 +1,6 @@
-'From Cuis7.5 [latest update: #7733] on 6 December 2025 at 12:40:36 am'!
+'From Cuis7.5 [latest update: #7739] on 6 December 2025 at 1:17:14 pm'!
 'Description '!
-!provides: 'AdventOfCode 2025' 1 4!
+!provides: 'AdventOfCode 2025' 1 5!
 SystemOrganization addCategory: #'AdventOfCode 2025'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 1'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 2'!
@@ -68,6 +68,16 @@ Object subclass: #DaySix2025
 	category: 'AdventOfCode 2025-Day 6'!
 !classDefinition: 'DaySix2025 class' category: #'AdventOfCode 2025-Day 6'!
 DaySix2025 class
+	instanceVariableNames: ''!
+
+!classDefinition: #Problem category: #'AdventOfCode 2025-Day 6'!
+Object subclass: #Problem
+	instanceVariableNames: 'numbers operator result operation'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'AdventOfCode 2025-Day 6'!
+!classDefinition: 'Problem class' category: #'AdventOfCode 2025-Day 6'!
+Problem class
 	instanceVariableNames: ''!
 
 
@@ -245,7 +255,7 @@ splitString: string chunkSize: chunkSize
 	
 	^ result.! !
 
-!DayThree2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 3/Dec/2025 08:50:00'!
+!DayThree2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 3/Dec/2025 08:50:49'!
 totalJoltage
 
 	| banks totalJolts |
@@ -278,7 +288,7 @@ totalJoltage
 
 	^ totalJolts.! !
 
-!DayThree2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 3/Dec/2025 18:58:00'!
+!DayThree2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 3/Dec/2025 18:58:49'!
 totalJoltageOverride
 
 	| banks totalJolts |
@@ -317,7 +327,7 @@ totalJoltageOverride
 
 	^ totalJolts.! !
 
-!DayFour2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 4/Dec/2025 23:32:00'!
+!DayFour2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 4/Dec/2025 23:32:24'!
 findAccesibleRoles
 
 	| grid count |
@@ -339,7 +349,7 @@ findAccesibleRoles
 
 	^ count.! !
 
-!DayFour2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 4/Dec/2025 23:52:00'!
+!DayFour2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 4/Dec/2025 23:52:18'!
 findAndRemoveAccesibleRoles
 
 	| grid totalCount |
@@ -366,7 +376,7 @@ findAndRemoveAccesibleRoles
 
 	^ totalCount.! !
 
-!DayFour2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 4/Dec/2025 23:48:00'!
+!DayFour2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 4/Dec/2025 23:48:41'!
 isRoleAccesibleOn: grid at: x and: y
 	
 	| count roleAccesible |
@@ -389,7 +399,7 @@ isRoleAccesibleOn: grid at: x and: y
 	
 	^ roleAccesible.! !
 
-!DayFour2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 4/Dec/2025 23:49:00'!
+!DayFour2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 4/Dec/2025 23:49:55'!
 isRoleOn: grid at: x and: y
 	
 	| role |
@@ -404,7 +414,7 @@ isRoleOn: grid at: x and: y
 	
 	^ role.! !
 
-!DayFive2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 6/Dec/2025 00:33:00'!
+!DayFive2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 6/Dec/2025 00:33:48'!
 countFreshIngredientIDs
 
 	| inventory unifiedInventory count mode |
@@ -475,7 +485,7 @@ countFreshIngredientIDs
 	
 	^ count.! !
 
-!DayFive2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 5/Dec/2025 23:30:00'!
+!DayFive2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 5/Dec/2025 23:30:01'!
 countSpoiledIngredients
 
 	| inventory count mode |
@@ -511,3 +521,148 @@ countSpoiledIngredients
 		].
 	
 	^ count.! !
+
+!DaySix2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 6/Dec/2025 12:01:16'!
+doHomework
+
+	| problems grandTotal |
+	problems := nil.
+	grandTotal := 0.
+	
+	'/home/jeroen/Documents/AdventOfCode/2025/day/6/input' asFileEntry readStreamDo: [:fileStream|
+		[fileStream atEnd] whileFalse: [ | line problemColumns |
+			line := fileStream nextLine.
+			problemColumns := line findTokens: ' '.
+			(problems = nil) ifTrue: [
+				problems := OrderedCollection new.
+				(problemColumns size) timesRepeat: [ problems add: (Problem new) ].
+				].
+			1 to: problems size do: [ :index |
+				| problem element |
+				
+				problem := problems at: index.
+				element := problemColumns at: index.
+				
+				((element = '*') | (element = '+'))
+					ifTrue: [
+						problem setOperator: element.
+						]
+					ifFalse: [
+						problem addNumber: element.
+						].
+				].
+			].
+		].
+	
+	problems do: [ :problem |
+		grandTotal := grandTotal + problem calculateResult.
+		].
+		
+	^ grandTotal.! !
+
+!DaySix2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 6/Dec/2025 13:16:12'!
+doHomeworkRtl
+
+	| problems problem lines grandTotal |
+	problems := OrderedCollection new.
+	problem := Problem new.
+	lines := OrderedCollection new.
+	grandTotal := 0.
+	
+	'/home/jeroen/Documents/AdventOfCode/2025/day/6/input' asFileEntry readStreamDo: [:fileStream|
+		[fileStream atEnd] whileFalse: [ | line |
+			line := fileStream nextLine.
+			lines add: line.
+			].
+		].
+	
+	(lines at: 1) size to: 1 by: -1 do: [ :column |
+		| number |
+		number := 0.
+		1 to: lines size do: [ :row |
+			| line char |
+			line := lines at: row .
+			char := line at: column .
+			char isDigit
+				ifTrue: [
+					number := number * 10 + char digitValue .
+					]
+				ifFalse: [
+					(char = Character space) ifFalse: [
+						problem setOperator: char.
+						].
+					].
+			].
+			(number > 0)
+				ifTrue: [
+					problem addNumber: number.
+					]
+				ifFalse: [
+					problems add: problem.
+					problem := Problem new.
+				].
+		].
+		problems add: problem.
+	
+	problems do: [ :p |
+		"
+		Transcript show: 'Problem: '.
+		p numbers do: [ :n | Transcript show: n asString, ' '].
+		Transcript show: p operator asString, ' = ', (p calculateResult) asString; cr.			
+		"
+		grandTotal := grandTotal + p calculateResult .
+		] .
+		
+	^ grandTotal.! !
+
+!Problem methodsFor: 'as yet unclassified' stamp: 'J.K. 6/Dec/2025 13:03:35'!
+addNumber: number
+
+	number isString
+		ifTrue: [
+			numbers add: number asNumber.
+			]
+		ifFalse: [
+			numbers add: number.
+			] .
+	^ self.! !
+
+!Problem methodsFor: 'as yet unclassified' stamp: 'J.K. 6/Dec/2025 13:13:50'!
+calculateResult
+
+	(operator = $*) ifTrue: [ result := 1 ] ifFalse: [ result := 0 ] .
+	numbers do: operation .
+	^ result .! !
+
+!Problem methodsFor: 'as yet unclassified' stamp: 'J.K. 6/Dec/2025 11:05:50'!
+initialize
+
+	numbers := OrderedCollection new.! !
+
+!Problem methodsFor: 'as yet unclassified' stamp: 'J.K. 6/Dec/2025 12:50:20'!
+numbers
+
+	^ numbers .! !
+
+!Problem methodsFor: 'as yet unclassified' stamp: 'J.K. 6/Dec/2025 12:55:46'!
+operator
+
+	^ operator .! !
+
+!Problem methodsFor: 'as yet unclassified' stamp: 'J.K. 6/Dec/2025 13:13:09'!
+setOperator: oper
+	
+	oper isString 
+		ifTrue: [
+			operator := oper at: 1.
+			]
+		ifFalse: [
+			operator := oper
+			].
+
+	(operator = $*) ifTrue: [
+		operation := [ :number | result := result * number  ].
+		].
+	(operator = $+) ifTrue: [
+		operation := [ :number | result := result + number  ].
+		].! !
