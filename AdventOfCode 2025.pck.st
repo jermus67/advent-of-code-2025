@@ -1,6 +1,6 @@
-'From Cuis7.5 [latest update: #7739] on 6 December 2025 at 1:17:14 pm'!
+'From Cuis7.5 [latest update: #7739] on 7 December 2025 at 5:50:16 pm'!
 'Description '!
-!provides: 'AdventOfCode 2025' 1 5!
+!provides: 'AdventOfCode 2025' 1 6!
 SystemOrganization addCategory: #'AdventOfCode 2025'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 1'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 2'!
@@ -8,6 +8,7 @@ SystemOrganization addCategory: #'AdventOfCode 2025-Day 3'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 4'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 5'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 6'!
+SystemOrganization addCategory: #'AdventOfCode 2025-Day 7'!
 
 
 !classDefinition: #DayOne2025 category: #'AdventOfCode 2025-Day 1'!
@@ -78,6 +79,16 @@ Object subclass: #Problem
 	category: 'AdventOfCode 2025-Day 6'!
 !classDefinition: 'Problem class' category: #'AdventOfCode 2025-Day 6'!
 Problem class
+	instanceVariableNames: ''!
+
+!classDefinition: #DaySeven2025 category: #'AdventOfCode 2025-Day 7'!
+Object subclass: #DaySeven2025
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'AdventOfCode 2025-Day 7'!
+!classDefinition: 'DaySeven2025 class' category: #'AdventOfCode 2025-Day 7'!
+DaySeven2025 class
 	instanceVariableNames: ''!
 
 
@@ -666,3 +677,83 @@ setOperator: oper
 	(operator = $+) ifTrue: [
 		operation := [ :number | result := result + number  ].
 		].! !
+
+!DaySeven2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 7/Dec/2025 15:56:41'!
+countBeamSplit
+
+	| manifold beams splitCount |
+	manifold := OrderedCollection new .
+	splitCount := 0 .
+	
+	'/home/jeroen/Documents/AdventOfCode/2025/day/7/input' asFileEntry readStreamDo: [:fileStream|
+		[fileStream atEnd] whileFalse: [ | line  |
+			line := fileStream nextLine .
+			manifold add: line .
+			] .
+		] .
+
+	beams := String new: ((manifold first) size) .
+
+	beams at: ((manifold first) indexOf: $S) put: $|.
+		
+	manifold allButFirstDo: [ :manifoldLine |
+		1 to: beams size do: [ :index |
+			((beams at: index) = $|) ifTrue: [
+				((manifoldLine at: index) = $^)
+					ifTrue: [
+						splitCount := splitCount + 1.
+						manifoldLine at: (index - 1) put: $|.
+						manifoldLine at: (index + 1) put: $|.
+						beams at: (index - 1) put: $|.
+						beams at: index put: (Character space).
+						beams at: (index + 1) put: $|.
+						]
+					ifFalse: [
+						manifoldLine at: index put: $|.
+						]
+				].
+			].	
+		].
+		
+	^ splitCount.! !
+
+!DaySeven2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 7/Dec/2025 17:49:26'!
+countTimeLines
+
+	| manifold timeLines timeLinesCount |
+	manifold := OrderedCollection new.
+	timeLines := OrderedCollection new.
+	timeLinesCount := 0.
+	
+	'/home/jeroen/Documents/AdventOfCode/2025/day/7/input' asFileEntry readStreamDo: [:fileStream|
+		[fileStream atEnd] whileFalse: [ | line  |
+			line := fileStream nextLine.
+			manifold add: line.
+			] .
+		] .
+
+	manifold first size timesRepeat: [ timeLines add: 0. ].
+
+	timeLines at: ((manifold first) indexOf: $S) put: 1.
+		
+	manifold allButFirstDo: [ :manifoldLine |
+		(manifoldLine indexOf: $^) > 0 ifTrue: [
+			1 to: timeLines size do: [ :index |				
+				(manifoldLine at: index) = $^ ifTrue: [
+					| numberOfTimeLines timeLinesAtLeft timeLinesAtRight |
+
+					numberOfTimeLines := timeLines at: index.
+					timeLinesAtLeft := timeLines at: index - 1.
+					timeLinesAtRight := timeLines at: index + 1.
+					
+					timeLines at: index - 1 put: numberOfTimeLines + timeLinesAtLeft.
+					timeLines at: index put: 0.
+					timeLines at: index + 1 put: numberOfTimeLines + timeLinesAtRight.				
+					].
+				].
+			].
+		].
+	
+	timeLines do: [ :count | timeLinesCount := timeLinesCount + count ].
+
+	^ timeLinesCount.! !
