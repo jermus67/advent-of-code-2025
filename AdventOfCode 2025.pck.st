@@ -1,6 +1,6 @@
-'From Cuis7.5 [latest update: #7739] on 7 December 2025 at 5:50:16 pm'!
+'From Cuis7.5 [latest update: #7739] on 8 December 2025 at 11:10:34 pm'!
 'Description '!
-!provides: 'AdventOfCode 2025' 1 6!
+!provides: 'AdventOfCode 2025' 1 7!
 SystemOrganization addCategory: #'AdventOfCode 2025'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 1'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 2'!
@@ -9,6 +9,7 @@ SystemOrganization addCategory: #'AdventOfCode 2025-Day 4'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 5'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 6'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 7'!
+SystemOrganization addCategory: #'AdventOfCode 2025-Day 8'!
 
 
 !classDefinition: #DayOne2025 category: #'AdventOfCode 2025-Day 1'!
@@ -89,6 +90,26 @@ Object subclass: #DaySeven2025
 	category: 'AdventOfCode 2025-Day 7'!
 !classDefinition: 'DaySeven2025 class' category: #'AdventOfCode 2025-Day 7'!
 DaySeven2025 class
+	instanceVariableNames: ''!
+
+!classDefinition: #DayEight2025 category: #'AdventOfCode 2025-Day 8'!
+Object subclass: #DayEight2025
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'AdventOfCode 2025-Day 8'!
+!classDefinition: 'DayEight2025 class' category: #'AdventOfCode 2025-Day 8'!
+DayEight2025 class
+	instanceVariableNames: ''!
+
+!classDefinition: #Point3D category: #'AdventOfCode 2025-Day 8'!
+Object subclass: #Point3D
+	instanceVariableNames: 'x y z'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'AdventOfCode 2025-Day 8'!
+!classDefinition: 'Point3D class' category: #'AdventOfCode 2025-Day 8'!
+Point3D class
 	instanceVariableNames: ''!
 
 
@@ -757,3 +778,203 @@ countTimeLines
 	timeLines do: [ :count | timeLinesCount := timeLinesCount + count ].
 
 	^ timeLinesCount.! !
+
+!DayEight2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 8/Dec/2025 23:05:38'!
+findLargestCircuit
+
+	| junctionBoxes shortestDistances sortedShortestDistancesKeys mostJunctionBoxes circuits result |
+	junctionBoxes := OrderedCollection new.
+	shortestDistances :=  Dictionary new.
+	circuits := OrderedCollection new.
+	
+	'/home/jeroen/Documents/AdventOfCode/2025/day/8/input' asFileEntry readStreamDo: [:fileStream|
+		[fileStream atEnd] whileFalse: [ | line elements new |
+			line := fileStream nextLine.
+			elements := line findTokens: ','.
+			new := (Point3D new) x: (elements at: 1) asNumber y: (elements at:2) asNumber z: (elements at: 3) asNumber.
+			junctionBoxes add: new.
+			junctionBoxes allButLastDo: [ :old |
+				| points |
+				points := OrderedCollection new.
+				points add: old.
+				points add: new.
+				shortestDistances at: (new distanceTo: old) put: points.
+				].
+			] .
+		] .
+
+	sortedShortestDistancesKeys := SortedCollection withAll: shortestDistances keys.
+	
+	1 to: 1000 do: [ : i | | key jbs j1 j2 mergeCircuitIndices |
+		key := sortedShortestDistancesKeys at: i.
+		jbs := shortestDistances at: key.
+		j1 := jbs at: 1.
+		j2 := jbs at: 2.
+		mergeCircuitIndices := OrderedCollection new.
+		1 to: circuits size do: [ :index |
+			| circuit |
+			circuit := circuits at: index.
+			(self isCircuit: jbs partOf: circuit) ifTrue: [
+				mergeCircuitIndices add: index.
+				].
+			].
+		(mergeCircuitIndices size = 0)
+			ifTrue: [
+				| circuit |
+				circuit := Set new.
+				circuit add: j1.
+				circuit add: j2.
+				circuits add: circuit.
+				]
+			ifFalse: [
+				| newCircuit oldCircuit |
+				newCircuit := Set new.
+				mergeCircuitIndices sort reversed do: [ :index |
+					oldCircuit := circuits removeAt:  index.
+					oldCircuit do: [ :element | newCircuit add: element ].
+					].
+				newCircuit add: j1.
+				newCircuit add: j2.
+				circuits add: newCircuit.
+				].
+		].
+	
+	mostJunctionBoxes := (circuits sort: [:a :b | a size < b size]) reversed.
+
+	result := 1.
+	1 to: 3 do: [ :index |
+		result := result * (mostJunctionBoxes at: index) size.
+		].
+	
+	^ result.! !
+
+!DayEight2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 8/Dec/2025 23:02:24'!
+findSingleCircuit
+
+	| junctionBoxes shortestDistances sortedShortestDistancesKeys circuits j1 j2 |
+	junctionBoxes := OrderedCollection new.
+	shortestDistances :=  Dictionary new.
+	circuits := OrderedCollection new.
+	
+	'/home/jeroen/Documents/AdventOfCode/2025/day/8/input' asFileEntry readStreamDo: [:fileStream|
+		[fileStream atEnd] whileFalse: [ | line elements new |
+			line := fileStream nextLine.
+			elements := line findTokens: ','.
+			new := (Point3D new) x: (elements at: 1) asNumber y: (elements at:2) asNumber z: (elements at: 3) asNumber.
+			junctionBoxes add: new.
+			junctionBoxes allButLastDo: [ :old |
+				| points |
+				points := OrderedCollection new.
+				points add: old.
+				points add: new.
+				shortestDistances at: (new distanceTo: old) put: points.
+				].
+			] .
+		] .
+
+	sortedShortestDistancesKeys := SortedCollection withAll: shortestDistances keys.
+	
+	[
+		| key jbs mergeCircuitIndices |
+		key := sortedShortestDistancesKeys removeAt: 1.
+		jbs := shortestDistances at: key.
+		j1 := jbs at: 1.
+		j2 := jbs at: 2.
+		junctionBoxes remove: j1 ifAbsent: [].
+		junctionBoxes remove: j2 ifAbsent: [].
+		mergeCircuitIndices := OrderedCollection new.
+		1 to: circuits size do: [ :index |
+			| circuit |
+			circuit := circuits at: index.
+			(self isCircuit: jbs partOf: circuit) ifTrue: [
+				mergeCircuitIndices add: index.
+				].
+			].
+		(mergeCircuitIndices size = 0)
+			ifTrue: [
+				| circuit |
+				circuit := Set new.
+				circuit add: j1.
+				circuit add: j2.
+				circuits add: circuit.
+				]
+			ifFalse: [
+				| newCircuit oldCircuit |
+				newCircuit := Set new.
+				mergeCircuitIndices sort reversed do: [ :index |
+					oldCircuit := circuits removeAt:  index.
+					oldCircuit do: [ :element | newCircuit add: element ].
+					].
+				newCircuit add: j1.
+				newCircuit add: j2.
+				circuits add: newCircuit.
+				].
+			(sortedShortestDistancesKeys size > 0) & (junctionBoxes size > 0).
+		] whileTrue.
+	
+	^ j1 x * j2 x.! !
+
+!DayEight2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 8/Dec/2025 07:46:18'!
+isCircuit: circuit partOf: otherCircuit
+
+	| partOf |
+	
+	partOf := false.
+	
+	circuit do: [ :junctionBox |
+		partOf := partOf | (otherCircuit includes: junctionBox).
+		].
+	
+	^ partOf.! !
+
+!Point3D methodsFor: 'as yet unclassified' stamp: 'J.K. 8/Dec/2025 06:44:57'!
+= other
+	
+	| equal |
+	
+	equal := (self == other).
+	
+	equal ifFalse: [
+		equal := (x = other x) & (y = other y) & (z = other z).
+		].
+
+	^ equal.! !
+
+!Point3D methodsFor: 'as yet unclassified' stamp: 'J.K. 8/Dec/2025 21:47:56'!
+asString
+
+	^ '(', x asString, ', ', y asString, ', ', z asString, ')'.! !
+
+!Point3D methodsFor: 'as yet unclassified' stamp: 'J.K. 8/Dec/2025 06:29:54'!
+distanceTo: other
+
+	| dx dy dz |
+	 
+	dx := other x - x.
+    	dy := other y - y.
+    	dz := other z - z.
+	
+	^ ((dx*dx) + (dy*dy) + (dz*dz)) asFloat sqrt.
+! !
+
+!Point3D methodsFor: 'as yet unclassified' stamp: 'J.K. 8/Dec/2025 06:26:14'!
+x
+
+	^ x.! !
+
+!Point3D methodsFor: 'as yet unclassified' stamp: 'J.K. 8/Dec/2025 06:23:41'!
+x: anX y: anY z: aZ
+
+	x := anX.
+	y := anY.
+	z := aZ.! !
+
+!Point3D methodsFor: 'as yet unclassified' stamp: 'J.K. 8/Dec/2025 06:26:24'!
+y
+
+	^ y.! !
+
+!Point3D methodsFor: 'as yet unclassified' stamp: 'J.K. 8/Dec/2025 06:26:33'!
+z
+
+	^ z.! !
