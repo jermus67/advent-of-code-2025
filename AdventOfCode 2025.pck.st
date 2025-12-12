@@ -1,6 +1,6 @@
-'From Cuis7.5 [latest update: #7739] on 8 December 2025 at 11:10:34 pm'!
+'From Cuis7.5 [latest update: #7758] on 12 December 2025 at 8:23:38 am'!
 'Description '!
-!provides: 'AdventOfCode 2025' 1 7!
+!provides: 'AdventOfCode 2025' 1 8!
 SystemOrganization addCategory: #'AdventOfCode 2025'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 1'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 2'!
@@ -10,6 +10,8 @@ SystemOrganization addCategory: #'AdventOfCode 2025-Day 5'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 6'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 7'!
 SystemOrganization addCategory: #'AdventOfCode 2025-Day 8'!
+SystemOrganization addCategory: #'AdventOfCode 2025-Day 9'!
+SystemOrganization addCategory: #'AdventOfCode 2025-Day 11'!
 
 
 !classDefinition: #DayOne2025 category: #'AdventOfCode 2025-Day 1'!
@@ -20,6 +22,16 @@ Object subclass: #DayOne2025
 	category: 'AdventOfCode 2025-Day 1'!
 !classDefinition: 'DayOne2025 class' category: #'AdventOfCode 2025-Day 1'!
 DayOne2025 class
+	instanceVariableNames: ''!
+
+!classDefinition: #DayEleven2025 category: #'AdventOfCode 2025-Day 11'!
+Object subclass: #DayEleven2025
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'AdventOfCode 2025-Day 11'!
+!classDefinition: 'DayEleven2025 class' category: #'AdventOfCode 2025-Day 11'!
+DayEleven2025 class
 	instanceVariableNames: ''!
 
 !classDefinition: #DayTwo2025 category: #'AdventOfCode 2025-Day 2'!
@@ -112,6 +124,16 @@ Object subclass: #Point3D
 Point3D class
 	instanceVariableNames: ''!
 
+!classDefinition: #DayNine2025 category: #'AdventOfCode 2025-Day 9'!
+Object subclass: #DayNine2025
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'AdventOfCode 2025-Day 9'!
+!classDefinition: 'DayNine2025 class' category: #'AdventOfCode 2025-Day 9'!
+DayNine2025 class
+	instanceVariableNames: ''!
+
 
 !DayOne2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 2/Dec/2025 22:49:00'!
 calculateMethodPassword
@@ -190,6 +212,80 @@ calculatePassword
 					].
 			].
 	^ zeroCounter.! !
+
+!DayEleven2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 12/Dec/2025 00:37:41'!
+find: paths from: device to: target in: devices containing: elements 
+
+	| currentPath |
+	
+	currentPath := OrderedCollection new.
+	
+	self find: paths from: device to: target in: devices with: currentPath containing: elements.
+! !
+
+!DayEleven2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 12/Dec/2025 00:39:58'!
+find: paths from: device to: target in: devices with: currentPath containing: elements   
+	
+	(devices at: device) do: [ :output |
+		currentPath add: output.
+		(output = target) ifTrue: [
+			 ((elements size) = 0) ifTrue: [
+				paths add: currentPath.
+				].
+			]
+		ifFalse: [
+			| filteredElements |
+			filteredElements := elements copy.
+			filteredElements remove: output ifAbsent: [].
+			self find: paths from: output to: target in: devices with: (currentPath copy) containing: filteredElements.
+			].
+		].
+! !
+
+!DayEleven2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 12/Dec/2025 08:14:49'!
+findAllPaths
+
+	| devices paths anyElement |
+	devices := Dictionary new.
+	paths := OrderedCollection new.
+	anyElement := OrderedCollection new.
+	
+	'/home/jeroen/Documents/AdventOfCode/2025/day/11/input' asFileEntry readStreamDo: [:fileStream|
+		[fileStream atEnd] whileFalse: [ | line device outputs |
+			line := fileStream nextLine.
+			device := (line findTokens: ':') at: 1.
+			outputs := ((line findTokens: ':') at: 2) findTokens: ' '.
+			devices at: device put: outputs.
+			].
+		].
+	
+	self find: paths from: 'svr' to: 'out' in: devices containing: anyElement.
+	
+	^ paths size.! !
+
+!DayEleven2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 12/Dec/2025 00:40:12'!
+findAllPathsContainingDacAndFft
+
+	| devices paths elements |
+	devices := Dictionary new.
+	paths := OrderedCollection new.
+	elements := OrderedCollection new.
+	
+	'/home/jeroen/Documents/AdventOfCode/2025/day/11/input' asFileEntry readStreamDo: [:fileStream|
+		[fileStream atEnd] whileFalse: [ | line device outputs |
+			line := fileStream nextLine.
+			device := (line findTokens: ':') at: 1.
+			outputs := ((line findTokens: ':') at: 2) findTokens: ' '.
+			devices at: device put: outputs.
+			].
+		].
+	
+	elements add: 'dac'.
+	elements add: 'fft'.
+	
+	self find: paths from: 'svr' to: 'out' in: devices containing: elements.
+	
+	^ paths size.! !
 
 !DayTwo2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 2/Dec/2025 22:57:00'!
 findAdditionalInvalidProductIds
@@ -978,3 +1074,238 @@ y
 z
 
 	^ z.! !
+
+!DayNine2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 10/Dec/2025 18:51:56'!
+addGreenTilesFrom: p1 to: p2 in: grid
+
+	| startX endX startY endY |
+	
+	startX := (p1 x) min: (p2 x).
+	endX := (p1 x) max: (p2 x).
+	startY := (p1 y) min: (p2 y).
+	endY := (p1 y) max: (p2 y).
+	
+	startX to: endX do: [ :x |
+		startY to: endY do: [ :y |
+			grid at: (Point x: x y: y) ifAbsentPut: [ $X ].
+			].
+		].! !
+
+!DayNine2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 10/Dec/2025 22:57:38'!
+checkIfHorizontalSegmentFrom: pointThis to: pointOther isWithin: grid
+
+	| x minY maxY segmentWithinGrid |
+	
+	x := pointThis x.
+	minY := (pointThis y) min: (pointOther y).
+	maxY := (pointThis y) max: (pointOther y).
+	segmentWithinGrid := true.
+	
+	minY to: maxY do: [ :y |
+		| checkPoint |
+		checkPoint := Point x: x y: y.
+		segmentWithinGrid := segmentWithinGrid & (grid includesKey: checkPoint).
+		].
+	
+	^ segmentWithinGrid .! !
+
+!DayNine2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 10/Dec/2025 18:57:24'!
+checkIfRectangleFrom: pointThis to: pointOther isWithin: grid
+
+	| isWithinGrid minX maxX minY maxY topLeft topRight bottomLeft bottomRight |
+	
+	isWithinGrid := true.
+	
+	minX := (pointThis x) min: (pointOther x).
+	maxX := (pointThis x) max: (pointOther x).
+	minY := (pointThis y) min: (pointOther y).
+	maxY := (pointThis y) max: (pointOther y).
+	
+	topLeft := Point x: minX y: minY.
+	topRight := Point x: minX y: maxY.
+	bottomLeft := Point x: maxX y: minY.
+	bottomRight := Point x: maxX y: maxY.
+	
+	isWithinGrid := isWithinGrid and: [ self checkIfSegmentFrom: topLeft to: topRight isWithin: grid ].
+	isWithinGrid := isWithinGrid and: [ self checkIfSegmentFrom: topLeft to: bottomLeft isWithin: grid ].
+	isWithinGrid := isWithinGrid and: [ self checkIfSegmentFrom: topRight to: bottomRight isWithin: grid ].
+	isWithinGrid := isWithinGrid and: [ self checkIfSegmentFrom: bottomLeft to: bottomRight isWithin: grid ].
+	
+	Transcript cr.
+	
+	^ isWithinGrid.! !
+
+!DayNine2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 10/Dec/2025 18:49:02'!
+checkIfSegmentFrom: pointThis to: pointOther isWithin: grid
+
+	| isWithinGrid |
+
+	isWithinGrid := false.
+		
+	(pointThis x = pointOther x)
+		ifTrue: [ isWithinGrid := self checkIfHorizontalSegmentFrom: pointThis to: pointOther isWithin: grid. ].
+	(pointThis y = pointOther y)
+		ifFalse: [ isWithinGrid := self checkIfVerticalSegmentFrom: pointThis to: pointOther isWithin: grid. ].
+	
+	^ isWithinGrid.! !
+
+!DayNine2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 10/Dec/2025 18:59:01'!
+checkIfVerticalSegmentFrom: pointThis to: pointOther isWithin: grid
+
+	| y minX maxX segmentWithinGrid |
+	
+	y := pointThis y.
+	minX := (pointThis x) min: (pointOther x).
+	maxX := (pointThis x) max: (pointOther x).
+	
+	segmentWithinGrid := true.
+	
+	minX to: maxX do: [ :x |
+		| checkPoint |
+		checkPoint := Point x: x y: y.
+		segmentWithinGrid := segmentWithinGrid & grid includes: checkPoint.
+		].
+	
+	Transcript show: '(V: ', segmentWithinGrid asString, ')'.
+
+	^ segmentWithinGrid .! !
+
+!DayNine2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 10/Dec/2025 00:59:32'!
+fill: grid withGreenTilesFrom: point
+
+	| nextPoint |
+	
+	(grid includesKey: point) ifFalse: [
+		grid at: point put: $X.
+	
+		nextPoint := Point x: (point x - 1) y: (point y -1).
+		self fill: grid withGreenTilesFrom: nextPoint.
+	
+		nextPoint := Point x: (point x - 1) y: (point y).
+		self fill: grid withGreenTilesFrom: nextPoint.
+		
+		nextPoint := Point x: (point x - 1) y: (point y + 1).
+		self fill: grid withGreenTilesFrom: nextPoint.
+		
+		nextPoint := Point x: (point x) y: (point y - 1).
+		self fill: grid withGreenTilesFrom: nextPoint.
+		
+		nextPoint := Point x: (point x) y: (point y + 1).
+		self fill: grid withGreenTilesFrom: nextPoint.
+		
+		nextPoint := Point x: (point x + 1) y: (point y -1).
+		self fill: grid withGreenTilesFrom: nextPoint.
+	
+		nextPoint := Point x: (point x + 1) y: (point y).
+		self fill: grid withGreenTilesFrom: nextPoint.
+		
+		nextPoint := Point x: (point x + 1) y: (point y + 1).
+		self fill: grid withGreenTilesFrom: nextPoint.
+		].
+	! !
+
+!DayNine2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 9/Dec/2025 22:48:06'!
+findLargestRectangle
+
+	| redTiles area |
+	redTiles := OrderedCollection new.
+	area := 0.
+	
+	'/home/jeroen/Documents/AdventOfCode/2025/day/9/input' asFileEntry readStreamDo: [:fileStream|
+		[fileStream atEnd] whileFalse: [ | line coordinates newTile |
+			line := fileStream nextLine.
+			coordinates := line findTokens: ','.
+			newTile := Point x: (coordinates at: 1) asNumber y: (coordinates at: 2) asNumber.
+			redTiles add: newTile.
+			redTiles allButLastDo: [ :tile |
+				| newArea length width |
+				length := (newTile x - tile x) abs + 1.
+				width := (newTile y - tile y) abs + 1.
+				newArea := length * width.
+				(newArea > area) ifTrue: [ area := newArea ].
+				].
+			].
+		].
+	
+	^ area.! !
+
+!DayNine2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 10/Dec/2025 19:11:59'!
+findLargestRectangleInPolygon
+
+	| redTiles visitedTiles grid area maxX maxY |
+	redTiles := OrderedCollection new.
+	visitedTiles := OrderedCollection new.
+	grid := Dictionary new.
+	area := 0.
+	maxX := 0.
+	maxY := 0.
+
+	"
+	""Draw"" the polygon => Dictionary with points, corners value $#, all others value $X
+	Fill the polygon:
+		From the first two points: determine the ""inside"" of the polygon. => how to determine inside? Inside starts at first point x+1 y+1 ...
+		Recursively fill the inside points with value $X
+	
+	Do the visitedTiles with newTiles
+	Traverse the edges of the rectangle in the dictionary
+	if all visited characters are either $# or $X, then the rectangle is inside.
+	"	
+	'/home/jeroen/Documents/AdventOfCode/2025/day/9/test' asFileEntry readStreamDo: [:fileStream|
+		[fileStream atEnd] whileFalse: [ | line coordinates newTile |
+			line := fileStream nextLine.
+			coordinates := line findTokens: ','.
+			newTile := Point x: (coordinates at: 1) asNumber y: (coordinates at: 2) asNumber.
+			redTiles add: newTile.
+			].
+		].
+	
+	1 to: (redTiles size - 1) do: [ :index |
+		| thisTile nextTile |
+		thisTile := redTiles at: index.
+		nextTile := redTiles at: index + 1.
+		self addGreenTilesFrom: thisTile to: nextTile in: grid.
+		].
+	self addGreenTilesFrom: (redTiles first) to: (redTiles last) in: grid.
+	
+	self printGrid: grid from: maxX to: maxY.
+	
+	self fill: grid withGreenTilesFrom: (Point x: (redTiles first x + 1) y: (redTiles first y + 1)).
+	
+	
+	redTiles do: [ :newTile |
+		visitedTiles add: newTile.
+		visitedTiles allButLastDo: [ :visitedTile |
+			(self checkIfRectangleFrom: newTile to: visitedTile isWithin: grid) ifTrue: [
+				| newArea length width |
+				length := (newTile x - visitedTile x) abs + 1.
+				width := (newTile y - visitedTile y) abs + 1.
+				newArea := length * width.
+				"
+				(newArea > area) ifTrue: [ area := newArea ].
+				"
+				area := area + 1.
+				].
+			].		
+		].
+	
+	
+	^ area.! !
+
+!DayNine2025 class methodsFor: 'as yet unclassified' stamp: 'J.K. 10/Dec/2025 19:11:07'!
+printGrid: grid from: maxX to: maxY
+
+	0 to: maxX do: [ :x |
+		0 to: maxY do: [ :y |
+			| point |
+			point := grid lookup: (Point x: x y: y).
+			(point = nil)
+				ifTrue: [
+					Transcript show: $. asString.
+					]
+				ifFalse: [
+					Transcript show: point asString.
+					]
+			].
+		Transcript cr.
+		].
+	Transcript cr.! !
